@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compra de Moto</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        header, footer {
+            background-color: #007BFF;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+        .container {
+            background-color: #fff;
+            max-width: 600px;
+            width: 100%;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+            margin: 20px auto;
+            flex: 1;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+        }
+        .result p {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        canvas {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Banco de Valores</h1>
+    </header>
+    <div class="container">
+        <h1>Compra de Moto</h1>
+        <label for="valor">Digite o valor a ser adicionado (R$):</label>
+        <input type="number" id="valor" step="0.01" placeholder="Ex: 100.00">
+        <button onclick="adicionarValor()">Adicionar Valor</button>
+        
+        <!-- Removido: Opção de retirada de valores -->
+        
+        <label for="meta">Defina a meta (R$):</label>
+        <input type="number" id="meta" step="0.01" placeholder="Ex: 1000.00">
+        <button onclick="definirMeta()">Definir Meta</button>
+        
+        <button onclick="exibirValores()">Exibir Valores</button>
+        <button onclick="calcularTotal()">Calcular Total</button>
+        <button onclick="plotarGrafico()">Plotar Gráfico</button>
+        
+        <div class="result" id="result"></div>
+        <canvas id="grafico" width="400" height="200"></canvas>
+    </div>
+    <footer>
+        <p>&copy; 2023 Banco de Valores. Todos os direitos reservados.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        let valores = JSON.parse(localStorage.getItem('valores')) || [];
+        let meta = parseFloat(localStorage.getItem('meta')) || 0;
+        let chart = null;
+
+        function adicionarValor() {
+            const valor = parseFloat(document.getElementById('valor').value);
+            if (isNaN(valor)) {
+                alert('Por favor, insira um valor numérico.');
+                return;
+            }
+            valores.push(valor);
+            localStorage.setItem('valores', JSON.stringify(valores));
+            alert(`Valor de R$${valor} adicionado com sucesso.`);
+            document.getElementById('valor').value = '';
+            plotarGrafico();  // Atualiza o gráfico após adicionar o valor
+        }
+
+        function definirMeta() {
+            meta = parseFloat(document.getElementById('meta').value);
+            if (isNaN(meta)) {
+                alert('Por favor, insira um valor numérico.');
+                return;
+            }
+            localStorage.setItem('meta', meta);
+            alert(`Meta de R$${meta} definida com sucesso.`);
+            document.getElementById('meta').value = '';
+        }
+
+        function exibirValores() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '<h3>Valores adicionados:</h3>';
+            valores.forEach(valor => {
+                resultDiv.innerHTML += `<p>R$${valor}</p>`;
+            });
+        }
+
+        function calcularTotal() {
+            const total = valores.reduce((acc, valor) => acc + valor, 0);
+            alert(`Total acumulado: R$${total}`);
+            if (meta > 0) {
+                alert(`Meta: R$${meta}\nFaltam: R$${meta - total}`);
+            }
+        }
+
+        function plotarGrafico() {
+            if (valores.length === 0) {
+                alert('Nenhum valor adicionado para plotar.');
+                return;
+            }
+            const ctx = document.getElementById('grafico').getContext('2d');
+            if (chart) {
+                chart.destroy();  // Destroi o gráfico anterior antes de desenhar o novo
+            }
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: valores.map((_, index) => index + 1),
+                    datasets: [{
+                        label: 'Valores Adicionados',
+                        data: valores,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 1,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Entradas'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Valores (R$)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Plota o gráfico ao carregar a página se houver valores salvos
+        window.onload = plotarGrafico;
+    </script>
+</body>
+</html>
