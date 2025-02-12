@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Compra de Moto</title>
+    <title>Banco de Valores</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -19,6 +19,17 @@
             color: white;
             text-align: center;
             padding: 10px 0;
+        }
+        nav {
+            background-color: #0056b3;
+            padding: 10px;
+            text-align: center;
+        }
+        nav a {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            font-weight: bold;
         }
         .container {
             background-color: #fff;
@@ -82,41 +93,65 @@
             font-size: 1.2em;
             color: #28a745;
         }
+        section {
+            display: none;
+        }
+        section.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <header>
         <h1>Banco de Valores</h1>
     </header>
+    <nav>
+        <a href="#" onclick="showSection('home')">Home</a>
+        <a href="#" onclick="showSection('adicionar')">Adicionar Valor</a>
+        <a href="#" onclick="showSection('meta')">Definir Meta</a>
+        <a href="#" onclick="showSection('valores')">Exibir Valores</a>
+        <a href="#" onclick="showSection('grafico')">Plotar Gráfico</a>
+    </nav>
     <div class="container">
-        <h1>Compra de Moto</h1>
-        <label for="valor">Digite o valor a ser adicionado (R$):</label>
-        <input type="number" id="valor" step="0.01" placeholder="Ex: 100.00">
-        <button onclick="adicionarValor()">Adicionar Valor</button>
+        <section id="home" class="active">
+            <h1>Bem-vindo ao Banco de Valores</h1>
+            <p>Utilize o menu acima para navegar entre as seções.</p>
+            
+            <!-- Adicionado: QR Code para depósito via Pix -->
+            <div class="qr-code">
+                <h3>Deposite via Pix</h3>
+                <img src="https://i.ibb.co/Xxx8hdG3/Whats-App-Image-2025-02-12-at-08-36-21.jpg" alt="QR Code para depósito via Pix">
+            </div>
+            
+            <!-- Adicionado: Rendimento no PicPay -->
+            <div class="rendimento" id="rendimento">
+                <!-- O rendimento será atualizado pelo JavaScript -->
+            </div>
+        </section>
         
-        <!-- Removido: Opção de retirada de valores -->
+        <section id="adicionar">
+            <h1>Adicionar Valor</h1>
+            <label for="valor">Digite o valor a ser adicionado (R$):</label>
+            <input type="number" id="valor" step="0.01" placeholder="Ex: 100.00">
+            <button onclick="adicionarValor()">Adicionar Valor</button>
+        </section>
         
-        <label for="meta">Defina a meta (R$):</label>
-        <input type="number" id="meta" step="0.01" placeholder="Ex: 1000.00">
-        <button onclick="definirMeta()">Definir Meta</button>
+        <section id="meta">
+            <h1>Definir Meta</h1>
+            <label for="meta">Defina a meta (R$):</label>
+            <input type="number" id="meta" step="0.01" placeholder="Ex: 1000.00">
+            <button onclick="definirMeta()">Definir Meta</button>
+        </section>
         
-        <button onclick="exibirValores()">Exibir Valores</button>
-        <button onclick="calcularTotal()">Calcular Total</button>
-        <button onclick="plotarGrafico()">Plotar Gráfico</button>
+        <section id="valores">
+            <h1>Exibir Valores</h1>
+            <div class="result" id="result"></div>
+        </section>
         
-        <div class="result" id="result"></div>
-        <canvas id="grafico" width="400" height="200"></canvas>
-        
-        <!-- Adicionado: QR Code para depósito via Pix -->
-        <div class="qr-code">
-            <h3>Deposite via Pix</h3>
-            <img src=""https://drive.google.com/file/d/1lflXAO6N6pgCHA5K59w0n2loS9WNP-fy/view?usp=sharing"" alt="QR Code para depósito via Pix">
-        </div>
-        
-        <!-- Adicionado: Rendimento no PicPay -->
-        <div class="rendimento" id="rendimento">
-            <!-- O rendimento será atualizado pelo JavaScript -->
-        </div>
+        <section id="grafico">
+            <h1>Plotar Gráfico</h1>
+            <canvas id="graficoCanvas" width="400" height="200"></canvas>
+        </section>
     </div>
     <footer>
         <p>&copy; 2023 Banco de Valores. Todos os direitos reservados.</p>
@@ -126,6 +161,13 @@
         let valores = JSON.parse(localStorage.getItem('valores')) || [];
         let meta = parseFloat(localStorage.getItem('meta')) || 0;
         let chart = null;
+
+        function showSection(sectionId) {
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+        }
 
         function adicionarValor() {
             const valor = parseFloat(document.getElementById('valor').value);
@@ -173,7 +215,7 @@
                 alert('Nenhum valor adicionado para plotar.');
                 return;
             }
-            const ctx = document.getElementById('grafico').getContext('2d');
+            const ctx = document.getElementById('graficoCanvas').getContext('2d');
             if (chart) {
                 chart.destroy();  // Destroi o gráfico anterior antes de desenhar o novo
             }
@@ -211,7 +253,7 @@
 
         function atualizarRendimento() {
             const total = valores.reduce((acc, valor) => acc + valor, 0);
-            const rendimento = total * 0.102;  // Supondo um rendimento de 1% ao mês
+            const rendimento = total * 0.102;  // Supondo um rendimento de 102% ao mês
             document.getElementById('rendimento').innerText = `Rendimento no PicPay: R$${rendimento.toFixed(2)} por mês`;
         }
 
@@ -219,6 +261,7 @@
         window.onload = function() {
             plotarGrafico();
             atualizarRendimento();
+            exibirValores();
         };
     </script>
 </body>
