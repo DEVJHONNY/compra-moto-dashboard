@@ -69,6 +69,19 @@
         canvas {
             margin-top: 20px;
         }
+        .qr-code {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .qr-code img {
+            max-width: 200px;
+        }
+        .rendimento {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 1.2em;
+            color: #28a745;
+        }
     </style>
 </head>
 <body>
@@ -93,6 +106,17 @@
         
         <div class="result" id="result"></div>
         <canvas id="grafico" width="400" height="200"></canvas>
+        
+        <!-- Adicionado: QR Code para depósito via Pix -->
+        <div class="qr-code">
+            <h3>Deposite via Pix</h3>
+            <img src="URL_DO_SEU_QR_CODE" alt="QR Code para depósito via Pix">
+        </div>
+        
+        <!-- Adicionado: Rendimento no PicPay -->
+        <div class="rendimento" id="rendimento">
+            <!-- O rendimento será atualizado pelo JavaScript -->
+        </div>
     </div>
     <footer>
         <p>&copy; 2023 Banco de Valores. Todos os direitos reservados.</p>
@@ -114,6 +138,7 @@
             alert(`Valor de R$${valor} adicionado com sucesso.`);
             document.getElementById('valor').value = '';
             plotarGrafico();  // Atualiza o gráfico após adicionar o valor
+            atualizarRendimento();  // Atualiza o rendimento após adicionar o valor
         }
 
         function definirMeta() {
@@ -184,8 +209,17 @@
             });
         }
 
-        // Plota o gráfico ao carregar a página se houver valores salvos
-        window.onload = plotarGrafico;
+        function atualizarRendimento() {
+            const total = valores.reduce((acc, valor) => acc + valor, 0);
+            const rendimento = total * 0.01;  // Supondo um rendimento de 1% ao mês
+            document.getElementById('rendimento').innerText = `Rendimento no PicPay: R$${rendimento.toFixed(2)} por mês`;
+        }
+
+        // Plota o gráfico e atualiza o rendimento ao carregar a página se houver valores salvos
+        window.onload = function() {
+            plotarGrafico();
+            atualizarRendimento();
+        };
     </script>
 </body>
 </html>
